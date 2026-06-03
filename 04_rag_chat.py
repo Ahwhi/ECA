@@ -1,6 +1,7 @@
 import chromadb
 from sentence_transformers import SentenceTransformer
 import ollama
+import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_DIR = os.path.join(BASE_DIR, "chromadb_store")
