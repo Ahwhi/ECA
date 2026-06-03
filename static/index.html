@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECA - EPS Code Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#080810; font-family:'Syne',sans-serif; color:#e2e8f0; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+.header { padding:20px 32px; border-bottom:1px solid rgba(99,255,180,0.12); display:flex; align-items:center; gap:16px; flex-shrink:0; }
+.logo { font-size:28px; font-weight:800; color:#fff; letter-spacing:-2px; }
+.logo span { color:#63ffb4; }
+.header-info { display:flex; flex-direction:column; gap:2px; }
+.header-tag { font-family:'JetBrains Mono',monospace; font-size:10px; color:#63ffb4; letter-spacing:3px; text-transform:uppercase; }
+.header-desc { font-family:'JetBrains Mono',monospace; font-size:11px; color:#334155; }
+.status { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.dot { width:7px; height:7px; background:#63ffb4; border-radius:50%; box-shadow:0 0 8px rgba(99,255,180,0.7); animation:pulse 2s infinite; }
+.status-text { font-family:'JetBrains Mono',monospace; font-size:10px; color:#334155; letter-spacing:1px; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.chat-area { flex:1; overflow-y:auto; padding:24px 32px; display:flex; flex-direction:column; gap:20px; }
+.chat-area::-webkit-scrollbar { width:3px; }
+.chat-area::-webkit-scrollbar-thumb { background:rgba(99,255,180,0.15); border-radius:2px; }
+.welcome { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:28px; padding:40px 0; text-align:center; }
+.welcome-logo { font-size:64px; font-weight:800; color:#fff; letter-spacing:-4px; line-height:1; }
+.welcome-logo span { color:#63ffb4; }
+.welcome-sub { font-family:'JetBrains Mono',monospace; font-size:12px; color:#334155; letter-spacing:2px; margin-top:12px; }
+.examples { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:560px; }
+.ex-btn { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:20px; color:#475569; font-family:'JetBrains Mono',monospace; font-size:11px; padding:7px 16px; cursor:pointer; transition:all 0.2s; }
+.ex-btn:hover { border-color:rgba(99,255,180,0.35); color:#63ffb4; background:rgba(99,255,180,0.05); }
+.msg-row { display:flex; flex-direction:column; gap:4px; }
+.msg-row.user { align-items:flex-end; }
+.msg-row.bot { align-items:flex-start; }
+.msg-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:#2d3748; letter-spacing:2px; text-transform:uppercase; padding:0 4px; }
+.bubble { max-width:80%; padding:14px 18px; line-height:1.7; font-size:14px; word-break:break-word; }
+.bubble.user { background:rgba(99,255,180,0.08); border:1px solid rgba(99,255,180,0.2); border-radius:18px 18px 4px 18px; color:#e2e8f0; white-space:pre-wrap; }
+.bubble.bot { background:rgba(15,15,28,0.95); border:1px solid rgba(255,255,255,0.07); border-left:3px solid #63ffb4; border-radius:4px 18px 18px 18px; color:#cbd5e1; font-family:'JetBrains Mono',monospace; font-size:13px; max-width:90%; line-height:1.8; }
+.bubble.bot code { background:rgba(99,255,180,0.1); color:#86efac; padding:2px 6px; border-radius:4px; font-size:12px; }
+.bubble.bot pre { background:rgba(0,0,0,0.5); border:1px solid rgba(99,255,180,0.1); border-radius:8px; padding:14px; margin:10px 0; overflow-x:auto; }
+.bubble.bot pre code { background:transparent; padding:0; }
+.bubble.bot strong { color:#e2e8f0; font-weight:700; }
+.typing { display:flex; gap:5px; padding:16px 20px; background:rgba(15,15,28,0.95); border:1px solid rgba(255,255,255,0.07); border-left:3px solid #63ffb4; border-radius:4px 18px 18px 18px; width:fit-content; }
+.typing span { width:6px; height:6px; background:#63ffb4; border-radius:50%; animation:bounce 1.2s infinite; }
+.typing span:nth-child(2) { animation-delay:0.2s; }
+.typing span:nth-child(3) { animation-delay:0.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:0.3} 30%{transform:translateY(-7px);opacity:1} }
+.input-area { padding:14px 32px 24px; border-top:1px solid rgba(255,255,255,0.05); background:#080810; flex-shrink:0; }
+.input-wrap { display:flex; gap:10px; align-items:flex-end; }
+textarea { flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:14px; color:#e2e8f0; font-family:'JetBrains Mono',monospace; font-size:13px; padding:14px 18px; resize:none; outline:none; transition:border-color 0.2s, box-shadow 0.2s; min-height:52px; max-height:120px; line-height:1.6; }
+textarea:focus { border-color:rgba(99,255,180,0.45); box-shadow:0 0 0 3px rgba(99,255,180,0.07); }
+textarea::placeholder { color:#2d3748; }
+.send-btn { background:#63ffb4; color:#080810; border:none; border-radius:12px; font-family:'Syne',sans-serif; font-weight:800; font-size:13px; letter-spacing:1px; padding:0 24px; height:52px; cursor:pointer; transition:all 0.2s; text-transform:uppercase; white-space:nowrap; }
+.send-btn:hover { background:#4ade80; box-shadow:0 4px 20px rgba(99,255,180,0.3); transform:translateY(-1px); }
+.send-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">E<span>C</span>A</div>
+  <div class="header-info">
+    <div class="header-tag">// EPS Code Assistant</div>
+    <div class="header-desc">StarCraft EUD/EPS Map Making AI</div>
+  </div>
+  <div class="status">
+    <div class="dot"></div>
+    <div class="status-text">ONLINE</div>
+    <div class="status-text" id="version" style="opacity:0.5;">-</div>
+  </div>
+</div>
+<div class="chat-area" id="chatArea">
+  <div class="welcome" id="welcome">
+    <div>
+      <div class="welcome-logo">E<span>C</span>A</div>
+      <div class="welcome-sub">EUD/EPS 맵 제작 전문 AI 어시스턴트</div>
+    </div>
+    <div class="examples">
+      <button class="ex-btn">euddraft가 뭐야?</button>
+      <button class="ex-btn">ptr과 epd가 뭐야?</button>
+      <button class="ex-btn">CUnit 사용법</button>
+      <button class="ex-btn">트리거 오류 해결 방법</button>
+      <button class="ex-btn">euddraft 설치 방법</button>
+      <button class="ex-btn">EUD Editor 사용법</button>
+    </div>
+  </div>
+</div>
+<div class="input-area">
+  <div class="input-wrap">
+    <textarea id="msgInput" placeholder="EUD/EPS 관련 질문을 입력하세요... (Enter: 전송 / Shift+Enter: 줄바꿈)" rows="1"></textarea>
+    <button class="send-btn" id="sendBtn">전송 →</button>
+  </div>
+</div>
+<script>
+var chatHistory = [];
+var chatArea = document.getElementById('chatArea');
+var msgInput = document.getElementById('msgInput');
+var sendBtn = document.getElementById('sendBtn');
+
+// 버전 불러오기
+fetch('/version')
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    document.getElementById('version').textContent = data.version;
+  });
+
+msgInput.addEventListener('input', function() {
+  msgInput.style.height = 'auto';
+  msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
+});
+
+msgInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+sendBtn.addEventListener('click', function() { sendMessage(); });
+
+document.querySelectorAll('.ex-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    msgInput.value = btn.textContent;
+    msgInput.style.height = 'auto';
+    msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
+    msgInput.focus();
+  });
+});
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatMsg(text) {
+  var parts = text.split(/(```[\s\S]*?```)/g);
+  var result = '';
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i].startsWith('```')) {
+      var code = parts[i].replace(/^```\w*\n?/, '').replace(/```$/, '');
+      result += '<pre><code>' + escHtml(code.trim()) + '</code></pre>';
+    } else {
+      var p = parts[i];
+      p = p.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+      p = p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      p = p.replace(/\n/g, '<br>');
+      result += p;
+    }
+  }
+  return result;
+}
+
+function removeWelcome() {
+  var w = document.getElementById('welcome');
+  if (w) w.remove();
+}
+
+function addMsg(role, content) {
+  removeWelcome();
+  var row = document.createElement('div');
+  row.className = 'msg-row ' + role;
+  var label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = role === 'user' ? 'YOU' : 'ECA';
+  var bubble = document.createElement('div');
+  bubble.className = 'bubble ' + role;
+  if (role === 'bot') bubble.innerHTML = formatMsg(content);
+  else bubble.textContent = content;
+  row.appendChild(label);
+  row.appendChild(bubble);
+  chatArea.appendChild(row);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function addTyping() {
+  removeWelcome();
+  var row = document.createElement('div');
+  row.className = 'msg-row bot';
+  row.id = 'typing';
+  var label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = 'ECA';
+  var t = document.createElement('div');
+  t.className = 'typing';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  row.appendChild(label);
+  row.appendChild(t);
+  chatArea.appendChild(row);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function removeTyping() {
+  var el = document.getElementById('typing');
+  if (el) el.remove();
+}
+
+function sendMessage() {
+  var msg = msgInput.value.trim();
+  if (!msg || sendBtn.disabled) return;
+  msgInput.value = '';
+  msgInput.style.height = 'auto';
+  sendBtn.disabled = true;
+  addMsg('user', msg);
+  addTyping();
+  fetch('/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({message: msg, history: chatHistory})
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    removeTyping();
+    addMsg('bot', data.answer);
+    chatHistory.push([msg, data.answer]);
+    sendBtn.disabled = false;
+    msgInput.focus();
+  })
+  .catch(function() {
+    removeTyping();
+    addMsg('bot', '오류가 발생했습니다. 다시 시도해주세요.');
+    sendBtn.disabled = false;
+    msgInput.focus();
+  });
+}
+</script>
+</body>
+</html>
