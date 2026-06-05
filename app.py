@@ -14,7 +14,7 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 CHROMA_DIR = "./chromadb_store"
 MODEL_NAME = "llama-3.1-8b-instant"
-VERSION = "v0.03"
+VERSION = "v0.04"
 
 print("🚀 ECA 로딩 중...")
 embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
@@ -59,10 +59,9 @@ def chat(req: ChatRequest):
 3. 인사나 잡담에는 짧게 답하고 EUD/EPS 질문을 유도하세요.
 4. 코드는 반드시 코드블록으로 작성하세요.
 5. 불필요한 설명, 예시, 부연은 하지 마세요. 핵심만 답변하세요.
-6. Eud Editor3의 EPS코드를 작성할때 구현하지 않은 함수는 구현해서 한꺼번에 답변하세요.
-7. eps 코드를 작성할때 플레이어들이 실행해야하면 플레이어 루프를 작성한 후 그 안에 작성하세요.
-8. 코드를 작성할때 사용할 변수는 코드 블럭에 포함해서 꼭 선언하세요.
-9. 코드를 작성할때 플레이어가 실행할 코드라면 플레이어 루프를 작성 한 후 그 안에서 코드를 작성하세요."""
+6. 구현하지 않은 함수와 변수는 구현 혹은 선언하고 한꺼번에 답변하세요.
+7. 코드를 작성할때, 사용자의 별다른 조건이 없으면 Eud Editor3에서 사용하는 epScript언어로 가정하고 답변하세요.
+8. 코드를 작성할때 사용할 변수는 코드 블럭에 포함해서 꼭 선언하세요."""
 
     messages = [{"role": "system", "content": system_prompt}]
     for h in req.history:

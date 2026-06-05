@@ -1,0 +1,3 @@
+py -3.11 01_crawler.py
+py -3.11 02_preprocess.py
+py -3.11 03_vectorize.py

@@ -7,14 +7,17 @@ SAVE_PATH = os.path.join(BASE_DIR, "data", "raw", "manual_data.jsonl")
 
 os.makedirs(MANUAL_DIR, exist_ok=True)
 
+EXTS = {".txt", ".eps"}
+
 results = []
 for fname in os.listdir(MANUAL_DIR):
-    if fname.endswith(".txt"):
+    ext = os.path.splitext(fname)[1].lower()
+    if ext in EXTS:
         fpath = os.path.join(MANUAL_DIR, fname)
         with open(fpath, "r", encoding="utf-8") as f:
             content = f.read().strip()
         if content:
-            title = fname.replace(".txt", "").replace("_", " ")
+            title = os.path.splitext(fname)[0].replace("_", " ")
             results.append({
                 "title": title,
                 "content": content,
